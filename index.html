@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Griff says</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Inputs -->
+        Main Image: <input type="file" id="mainImage" accept="image/*"><br>
+        Text Blurb: <input type="text" id="textBlurb" placeholder="Text Blurb (Max 12 chars)" maxlength="12"><br>
+        Blurb Background Color: <input type="color" id="textBgColor" value="#000000"><br>
+        Bubble Image: <input type="file" id="bubbleImage" accept="image/*"><br>
+        Logo: <select id="logoDropdown">
+            <option value="">No Logo</option>
+            <option value="src/nfl.png">NFL</option>
+            <option value="src/nba.png">NBA</option>
+            <option value="src/mlb.png">MLB</option>
+            <option value="src/ncaa.png">NCAA</option>
+        </select><br>
+        <!-- <input type="text" id="twitterContent" placeholder="Twitter Content (Optional)"><br> -->
+        <button id="generateButton">Generate</button>
+    </div>
+
+  <!-- Preview -->
+  <canvas id="previewCanvas" width="400" height="500"></canvas>
+
+  <script>
+    $(document).ready(function () {
+      const canvas = document.getElementById("previewCanvas");
+      const ctx = canvas.getContext("2d");
+  
+      $("#generateButton").on("click", async function () {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+        // Get inputs
+        const mainImageFile = $("#mainImage")[0].files[0];
+        const bubbleImageFile = $("#bubbleImage")[0].files[0];
+        const textBlurb = `‘${$("#textBlurb").val().toUpperCase()}’`; // Add quotes
+        const textBgColor = $("#textBgColor").val();
+        const logo = $("#logoDropdown").val();
+        //const twitterContent = $("#twitterContent").val();
+  
+        // Draw main image first
+        if (mainImageFile) {
+          const mainImage = await loadImage(mainImageFile);
+          drawMainImage(mainImage);
+        }
+
+        // Draw on3.png logo in the top-right corner
+        const on3Logo = await loadImage("on3.png");
+        drawTopRightLogo(on3Logo);
+  
+        // Draw elements on top
+        if (bubbleImageFile) {
+          const bubbleImage = await loadImage(bubbleImageFile);
+          drawBubbleImage(bubbleImage);
+        } //if no defined image, use a default image
+        else {
+          const bubbleImage = await loadImage("src/griff.png");
+          drawBubbleImage(bubbleImage);
+        }
+  
+        if (logo) {
+          const logoImage = await loadImage(logo);
+          drawLogo(logoImage);
+        }
+  
+        if (textBlurb) {
+          drawTextBlurb(textBlurb, textBgColor);
+        }
+
+        // Draw black border on top of the image
+        drawBlackFrame();
+  
+      });
+  
+      function loadImage(file) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          if (file instanceof File) {
+            img.src = URL.createObjectURL(file);
+          } else {
+            img.src = file; // For predefined logos
+          }
+        });
+      }
+  
+      function drawMainImage(img) {
+        const padding = 10; // Define inner space for the black frame
+        const innerWidth = canvas.width - padding * 2;
+        const innerHeight = canvas.height - padding * 2;
+  
+        const aspectRatio = img.width / img.height;
+        const canvasRatio = innerWidth / innerHeight;
+  
+        let drawWidth, drawHeight, offsetX, offsetY;
+        if (aspectRatio > canvasRatio) {
+          drawWidth = innerHeight * aspectRatio;
+          drawHeight = innerHeight;
+          offsetX = (innerWidth - drawWidth) / 2 + padding;
+          offsetY = padding;
+        } else {
+          drawWidth = innerWidth;
+          drawHeight = innerWidth / aspectRatio;
+          offsetX = padding;
+          offsetY = (innerHeight - drawHeight) / 2 + padding;
+        }
+  
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      }
+  
+      function drawBlackFrame() {
+        const borderRadius = 40; // Rounded corner radius
+        const padding = 0; // Black border width
+        const halfPadding = padding/2;
+  
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(halfPadding + borderRadius, halfPadding);
+        ctx.lineTo(canvas.width - halfPadding - borderRadius, halfPadding);
+        ctx.quadraticCurveTo(
+          canvas.width - halfPadding,
+          halfPadding,
+          canvas.width - halfPadding,
+          halfPadding + borderRadius
+        );
+        ctx.lineTo(canvas.width - halfPadding, canvas.height - halfPadding - borderRadius);
+        ctx.quadraticCurveTo(
+          canvas.width - halfPadding,
+          canvas.height - halfPadding,
+          canvas.width - halfPadding - borderRadius,
+          canvas.height - halfPadding
+        );
+        ctx.lineTo(halfPadding + borderRadius, canvas.height - halfPadding);
+        ctx.quadraticCurveTo(
+          halfPadding,
+          canvas.height - halfPadding,
+          halfPadding,
+          canvas.height - halfPadding - borderRadius
+        );
+        ctx.lineTo(halfPadding, halfPadding + borderRadius);
+        ctx.quadraticCurveTo(halfPadding, halfPadding, halfPadding + borderRadius, halfPadding);
+        ctx.closePath();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 40;
+        ctx.stroke();
+      }
+  
+
+        function drawTopRightLogo(img) {
+        const size = 50; // Size of the logo
+        const padding = 20; // Space between the logo and the border
+        ctx.drawImage(img, canvas.width - size - padding, padding, size, size);
+        }
+
+      function drawTextBlurb(text, bgColor) {
+        const blurbHeight = 140;
+        const padding = 20;
+  
+        // Calculate font size to fill 90% of canvas width
+        let fontSize = 90;
+        ctx.font = `bolder ${fontSize}px Tahoma`;
+        let textWidth = ctx.measureText(text).width;
+        while (textWidth > canvas.width * 0.9) {
+          fontSize--;
+          ctx.font = `bolder ${fontSize}px Tahoma`;
+          textWidth = ctx.measureText(text).width;
+        }
+  
+        // Create gradient background
+        const gradient = ctx.createLinearGradient(0, canvas.height - blurbHeight, 0, canvas.height);
+        
+        gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+        gradient.addColorStop(0.4, bgColor);
+  
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, canvas.height - blurbHeight, canvas.width, blurbHeight);
+  
+        // Draw shadow
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 10;
+  
+        // Draw text
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText(text, canvas.width / 2, canvas.height - blurbHeight / 2 + padding + 10);
+  
+        ctx.shadowBlur = 0; // Reset shadow
+      }
+  
+      function drawBubbleImage(img) {
+        const size = 80;
+        const padding = 30;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(padding + size / 2, padding + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, padding, padding, size, size);
+        ctx.restore();
+      }
+  
+      function drawLogo(img) {
+        const bubbleSize = 80;
+        const logoWidth = bubbleSize;
+        const logoHeight = (img.height / img.width) * logoWidth;
+        ctx.drawImage(img, 30, 120, logoWidth, logoHeight);
+      }
+  
+      function drawTwitterContent(text) {
+        const height = 40;
+        ctx.fillStyle = "#1DA1F2";
+        ctx.fillRect(0, canvas.height - height, canvas.width, height);
+  
+        ctx.fillStyle = "white";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(text, canvas.width / 2, canvas.height - height / 2 + 5);
+      }
+    });
+  </script>
+  
+  
+  
+</body>
+</html>
