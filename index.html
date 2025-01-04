@@ -6,6 +6,8 @@
   <title>Griff says</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <link rel="stylesheet" href="src/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@900&display=swap" rel="stylesheet">
+
 </head>
 <body>
     <div class="container">
@@ -158,40 +160,40 @@
         ctx.drawImage(img, canvas.width - size - padding, padding, size, size);
         }
 
-      function drawTextBlurb(text, bgColor) {
-        const blurbHeight = 140;
-        const padding = 20;
-  
-        // Calculate font size to fill 90% of canvas width
-        let fontSize = 90;
-        ctx.font = `bolder ${fontSize}px Tahoma`;
-        let textWidth = ctx.measureText(text).width;
-        while (textWidth > canvas.width * 0.9) {
-          fontSize--;
-          ctx.font = `bolder ${fontSize}px Tahoma`;
-          textWidth = ctx.measureText(text).width;
-        }
-  
-        // Create gradient background
-        const gradient = ctx.createLinearGradient(0, canvas.height - blurbHeight, 0, canvas.height);
-        
-        gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
-        gradient.addColorStop(0.4, bgColor);
-  
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, canvas.height - blurbHeight, canvas.width, blurbHeight);
-  
-        // Draw shadow
-        ctx.shadowColor = "black";
-        ctx.shadowBlur = 10;
-  
-        // Draw text
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.fillText(text, canvas.width / 2, canvas.height - blurbHeight / 2 + padding + 10);
-  
-        ctx.shadowBlur = 0; // Reset shadow
+        function drawTextBlurb(text, bgColor) {
+          const blurbHeight = 140;
+          const padding = 20;
+
+          // Calculate font size to fill 90% of canvas width
+          let fontSize = 90;
+          ctx.font = `900 ${fontSize}px 'Open Sans', sans-serif`;
+          let textWidth = ctx.measureText(text).width;
+          while (textWidth > canvas.width * 0.9) {
+              fontSize--;
+              ctx.font = `900 ${fontSize}px 'Open Sans', sans-serif`;
+              textWidth = ctx.measureText(text).width;
+          }
+
+          // Create gradient background
+          const gradient = ctx.createLinearGradient(0, canvas.height - blurbHeight, 0, canvas.height);
+          gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+          gradient.addColorStop(0.4, bgColor);
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, canvas.height - blurbHeight, canvas.width, blurbHeight);
+
+          // Draw shadow
+          ctx.shadowColor = "black";
+          ctx.shadowBlur = 10;
+
+          // Draw text
+          ctx.fillStyle = "white";
+          ctx.textAlign = "center";
+          ctx.fillText(text, canvas.width / 2, canvas.height - blurbHeight / 2 + padding + 10);
+
+          ctx.shadowBlur = 0; // Reset shadow
       }
+
   
       function drawBubbleImage(img) {
         const size = 80;
